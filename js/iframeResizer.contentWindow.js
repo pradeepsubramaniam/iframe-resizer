@@ -818,17 +818,17 @@
         return getTaggedElements('bottom','data-iframe-height');
       },
 
-      maxAll: function getMaxAllHeight(){
-				var currentHeight = Math.max.apply(null,getAllMeasurements(getHeight));
-				var leHeight = Math.max(getHeight.bodyOffset(), getMaxElement('bottom',getAllElements()));
-				if(currentHeight > leHeight) {
-					window.setTimeout(function(){
-						currentHeight = Math.max(getHeight.bodyOffset(),getHeight.bodyScroll(),getHeight.documentElementOffset(), getMaxElement('bottom',getAllElements()));
-						sendMsg(currentHeight,getWidth[widthCalcMode](),null);
-					},100);
-				}
-				return currentHeight;
-			}
+      maxAll: function getMaxAllHeight() {
+        var currentHeight = Math.max.apply(null, getAllMeasurements(getHeight));
+        var leHeight = Math.max(getHeight.bodyOffset(), getMaxElement('bottom', getAllElements()));
+        if (currentHeight > leHeight) {
+          window.setTimeout(function () {
+            currentHeight = Math.max(getHeight.bodyOffset(), getHeight.bodyScroll(), getHeight.documentElementOffset(), getMaxElement('bottom', getAllElements()));
+            sendMsg(currentHeight, getWidth[widthCalcMode](), null);
+          }, 100);
+        }
+        return currentHeight;
+      }
     },
 
     getWidth = {
