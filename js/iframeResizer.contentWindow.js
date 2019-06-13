@@ -313,9 +313,9 @@
     manageTriggerEvent({method:method, eventType: 'Transition Start',          eventNames: ['transitionstart','webkitTransitionStart','MSTransitionStart','oTransitionStart','otransitionstart'] });
     manageTriggerEvent({method:method, eventType: 'Transition Iteration',      eventNames: ['transitioniteration','webkitTransitionIteration','MSTransitionIteration','oTransitionIteration','otransitioniteration'] });
     manageTriggerEvent({method:method, eventType: 'Transition End',            eventNames: ['transitionend','webkitTransitionEnd','MSTransitionEnd','oTransitionEnd','otransitionend'] });
-    if('child' === resizeFrom) {
+    //if('child' === resizeFrom) { // to fix on tab change before iframe loads.
       manageTriggerEvent({method:method, eventType: 'IFrame Resized',        eventName:  'resize' });
-    }
+    //}
   }
 
   function checkCalcMode(calcMode,calcModeDefault,modes,type) {
@@ -721,7 +721,8 @@
   }
 
   //Idea from https://github.com/guardian/iframe-messenger
-  function getMaxElement(side,elements) {
+  function getMaxElement(side,elements, useMargin) {
+    useMargin = (typeof useMargin === 'undefined' ? true : useMargin);       
     var
       elementsLength = elements.length,
       elVal          = 0,
@@ -730,7 +731,8 @@
       timer          = getNow();
 
     for (var i = 0; i < elementsLength; i++) {
-      elVal = elements[i].getBoundingClientRect()[side] + getComputedStyle('margin'+Side,elements[i]);
+      var marginHeight = getComputedStyle('margin' + Side, elements[i]);
+      elVal = elements[i].getBoundingClientRect()[side] + getComputedStyle('margin'+Side,elements[i]) + (useMargin ? marginHeight : 0);
       if (elVal > maxVal) {
         maxVal = elVal;
       }
@@ -818,17 +820,9 @@
         return getTaggedElements('bottom','data-iframe-height');
       },
 
-      maxAll: function getMaxAllHeight() {
-        var currentHeight = Math.max.apply(null, getAllMeasurements(getHeight));
-        var leHeight = Math.max(getHeight.bodyOffset(), getMaxElement('bottom', getAllElements()));
-        if (currentHeight > leHeight) {
-          window.setTimeout(function () {
-            currentHeight = Math.max(getHeight.bodyOffset(), getHeight.bodyScroll(), getHeight.documentElementOffset(), getMaxElement('bottom', getAllElements()));
-            sendMsg(currentHeight, getWidth[widthCalcMode](), null);
-          }, 100);
-        }
-        return currentHeight;
-      }
+      lowestElementNoMargin: function getBestHeight() {
+        return Math.max(getHeight.bodyOffset(), getMaxElement('bottom', getAllElements(), false));
+      },
     },
 
     getWidth = {
@@ -879,8 +873,9 @@
     function resizeIFrame() {
       height = currentHeight;
       width  = currentWidth;
-
-      sendMsg(height,width,triggerEvent);
+      if (height > 50) { //do not set height if its less then
+        sendMsg(height,width,triggerEvent);
+      }
     }
 
     function isSizeChangeDetected() {
@@ -966,8 +961,9 @@
   function triggerReset(triggerEvent) {
     height = getHeight[heightCalcMode]();
     width  = getWidth[widthCalcMode]();
-
-    sendMsg(height,width,triggerEvent);
+    if (height > 50) {
+      sendMsg(height,width,triggerEvent);
+    }
   }
 
   function resetIFrame(triggerEventDesc) {
